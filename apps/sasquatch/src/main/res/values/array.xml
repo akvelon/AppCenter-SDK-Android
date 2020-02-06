@@ -20,4 +20,12 @@
         <item>Public</item>
         <item>Private</item>
     </string-array>
+    <string-array name="appcenter_distribute_flags_entries" tools:ignore="MissingTranslation">
+        <item>Disable Auto Auth</item>
+        <item>Disable Auto Check for Update</item>
+    </string-array>
+    <string-array name="appcenter_distribute_flags_entry_values" tools:ignore="MissingTranslation">
+        <item>1</item>
+        <item>2</item>
+    </string-array>
 </resources>

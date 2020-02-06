@@ -115,13 +115,27 @@ public class MainActivity extends AppCompatActivity {
             try {
 
                 /*
-                 * TODO replace the next line with 'Distribute.setUpdateTrack(savedTrack);'
+                 * TODO replace the next 2 lines with 'Distribute.setUpdateTrack(savedTrack);'
                  * when updating the demo during release process.
                  */
                 Method setUpdateTrackMethod = Distribute.class.getMethod("setUpdateTrack", int.class);
                 setUpdateTrackMethod.invoke(null, savedTrack);
             } catch (Exception e) {
                 Toast.makeText(application, "No Update Track API in this build", Toast.LENGTH_SHORT).show();
+            }
+        }
+        int savedFlags = sSharedPreferences.getInt(application.getString(R.string.appcenter_distribute_flags_key), 0);
+        if (savedFlags != 0) {
+            try {
+
+                /*
+                 * TODO replace the next line with 'Distribute.configure(savedFlags);'
+                 * when updating the demo during release process.
+                 */
+                Method configureMethod = Distribute.class.getMethod("configure", int.class);
+                configureMethod.invoke(null, savedTrack);
+            } catch (Exception e) {
+                Toast.makeText(application, "No Configure API in this build", Toast.LENGTH_SHORT).show();
             }
         }
         if (sSharedPreferences.contains(ANALYTICS_TRANSMISSION_INTERVAL_KEY)) {

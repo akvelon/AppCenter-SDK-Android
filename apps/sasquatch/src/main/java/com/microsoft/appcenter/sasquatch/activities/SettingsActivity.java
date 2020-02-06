@@ -46,6 +46,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -320,6 +321,47 @@ public class SettingsActivity extends AppCompatActivity {
                     return updateTrackEnum != null ? getString(updateTrackEnum.summaryRes) : "Couldn't parse update track";
                 }
             };
+
+            initChangeableSetting(R.string.appcenter_distribute_flags_key, getDistributeFlagsSummary(), new Preference.OnPreferenceChangeListener() {
+
+                @Override
+                @SuppressWarnings("unchecked")
+                public boolean onPreferenceChange(Preference preference, Object newValue) {
+                    if (newValue == null) {
+                        return false;
+                    }
+                    Set<String> values = (Set<String>)newValue;
+                    int mask = 0x00;
+                    String[] flagEntries = getResources().getStringArray(R.array.appcenter_distribute_flags_entry_values);
+                    for(String flagString : flagEntries) {
+                        if (!values.contains(flagString)) {
+                            continue;
+                        }
+
+                        /*
+                         * TODO Replace the next 4 lines with:
+                         *
+                         * if (flagString.equals(String.format(Locale.getDefault(), "%d", DistributeFlags.DISABLE_AUTOMATIC_AUTHENTICATION))) {
+                         *  mask |= DistributeFlags.DISABLE_AUTOMATIC_AUTHENTICATION;
+                         * } else if (flagString.equals(String.format(Locale.getDefault(), "%d", DistributeFlags.DISABLE_AUTOMATIC_CHECK_FOR_UPDATE))) {
+                         *  mask |= DistributeFlags.DISABLE_AUTOMATIC_CHECK_FOR_UPDATE;
+                         * }
+                         *
+                         * when updating the demo during release process.
+                         */
+                        if (flagString.equals(String.format(Locale.getDefault(), "%d", 0x01))) {
+                            mask |= 0x01;
+                        } else if (flagString.equals(String.format(Locale.getDefault(), "%d", 0x02))) {
+                            mask |= 0x02;
+                        }
+                    }
+                    MainActivity.sSharedPreferences.edit().putInt(getString(R.string.appcenter_distribute_flags_key), mask).apply();
+                    preference.setSummary(getDistributeFlagsSummary());
+                    Toast.makeText(getActivity(), R.string.appcenter_distribute_flags_updated, Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+            });
+
             initChangeableSetting(R.string.appcenter_distribute_track_state_key, updateTrackHasSummary.getSummary(), new Preference.OnPreferenceChangeListener() {
 
                 @Override
@@ -876,6 +918,34 @@ public class SettingsActivity extends AppCompatActivity {
                 }
             }
             return getString(R.string.appcenter_crashes_file_attachment_summary_empty);
+        }
+
+        private String getDistributeFlagsSummary() {
+            int flags = MainActivity.sSharedPreferences.getInt(getString(R.string.appcenter_distribute_flags_key), 0);
+            if (flags == 0) {
+                return getString(R.string.appcenter_distribute_flags_summary);
+            }
+            StringBuilder flagString = new StringBuilder();
+
+            /*
+             * TODO Replace the next line with:
+             *  'if ((flags & DistributeFlags.DISABLE_AUTOMATIC_AUTHENTICATION) == DistributeFlags.DISABLE_AUTOMATIC_AUTHENTICATION) {'
+             */
+            if ((flags & 0x01) == 0x01) {
+                flagString.append(getString(R.string.appcenter_distribute_flag_disable_auto_auth));
+            }
+
+            /*
+             * TODO Replace the next line with:
+             *  'if ((flags & DistributeFlags.DISABLE_AUTOMATIC_CHECK_FOR_UPDATE) == DistributeFlags.DISABLE_AUTOMATIC_CHECK_FOR_UPDATE) {'
+             */
+            if ((flags & 0x02) == 0x02) {
+                if (flagString.length() > 0) {
+                    flagString.append(" | ");
+                }
+                flagString.append(getString(R.string.appcenter_distribute_flag_disable_check_for_update));
+            }
+            return flagString.toString();
         }
 
         private String getSummary(final String preferencesKey, final String defaultValue) {
